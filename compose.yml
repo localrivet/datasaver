@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  datasaver:
+    build: .
+    environment:
+      DATASAVER_DB_HOST: postgres
+      DATASAVER_DB_PORT: "5432"
+      DATASAVER_DB_NAME: mydb
+      DATASAVER_DB_USER: postgres
+      DATASAVER_DB_PASSWORD: secret
+      DATASAVER_SCHEDULE: "0 2 * * *"
+      DATASAVER_STORAGE_BACKEND: local
+      DATASAVER_STORAGE_PATH: /backups
+      DATASAVER_KEEP_DAILY: "7"
+      DATASAVER_KEEP_WEEKLY: "4"
+      DATASAVER_KEEP_MONTHLY: "6"
+      DATASAVER_COMPRESSION: gzip
+      DATASAVER_METRICS_PORT: "9090"
+      DATASAVER_HEALTH_PORT: "8080"
+    volumes:
+      - backup_data:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backup_data:
+
+networks:
+  app_network:
