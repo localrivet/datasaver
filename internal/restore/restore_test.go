@@ -84,7 +84,7 @@ func TestNewEngine(t *testing.T) {
 	engine := NewEngine(cfg, store, logger)
 
 	if engine == nil {
-		t.Error("NewEngine() returned nil")
+		t.Fatal("NewEngine() returned nil")
 	}
 	if engine.cfg != cfg {
 		t.Error("NewEngine() cfg mismatch")

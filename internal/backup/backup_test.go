@@ -504,7 +504,7 @@ func TestNewScheduler(t *testing.T) {
 	s := NewScheduler(nil, "0 2 * * *", logger)
 
 	if s == nil {
-		t.Error("NewScheduler() returned nil")
+		t.Fatal("NewScheduler() returned nil")
 	}
 	if s.schedule != "0 2 * * *" {
 		t.Errorf("schedule = %v, want 0 2 * * *", s.schedule)

@@ -277,7 +277,7 @@ func TestValidator_ValidBackup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateTemp() error: %v", err)
 	}
-	tmpFile.Write(content)
+	_, _ = tmpFile.Write(content)
 	tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
 

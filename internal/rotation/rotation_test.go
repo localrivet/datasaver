@@ -203,7 +203,7 @@ func TestNewGFSRotator(t *testing.T) {
 	rotator := NewGFSRotator(policy)
 
 	if rotator == nil {
-		t.Error("NewGFSRotator() returned nil")
+		t.Fatal("NewGFSRotator() returned nil")
 	}
 	if rotator.policy != policy {
 		t.Error("NewGFSRotator() policy mismatch")

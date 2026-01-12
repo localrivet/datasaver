@@ -51,7 +51,7 @@ func (h *Handler) HandleProtectedResourceMetadata(w http.ResponseWriter, r *http
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	json.NewEncoder(w).Encode(metadata)
+	_ = json.NewEncoder(w).Encode(metadata)
 }
 
 // HandleAuthServerMetadata returns the authorization server metadata.
@@ -76,5 +76,5 @@ func (h *Handler) HandleAuthServerMetadata(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate")
-	json.NewEncoder(w).Encode(metadata)
+	_ = json.NewEncoder(w).Encode(metadata)
 }

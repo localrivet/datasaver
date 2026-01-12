@@ -165,8 +165,8 @@ func daemonCmd() *cobra.Command {
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer shutdownCancel()
 
-			healthServer.Shutdown(shutdownCtx)
-			metricsServer.Shutdown(shutdownCtx)
+			_ = healthServer.Shutdown(shutdownCtx)
+			_ = metricsServer.Shutdown(shutdownCtx)
 
 			return nil
 		},

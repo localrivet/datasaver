@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/localrivet/datasaver/internal/config"
@@ -27,8 +26,6 @@ type Engine struct {
 	rotator   *rotation.GFSRotator
 	notifier  *notify.Notifier
 	logger    *slog.Logger
-	retry     RetryConfig
-	mu        sync.RWMutex
 	lastRun   time.Time
 	lastError error
 }

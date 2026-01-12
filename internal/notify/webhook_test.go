@@ -89,7 +89,7 @@ func TestNotifier_NotifyFailure(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		json.Unmarshal(body, &receivedPayload)
+		_ = json.Unmarshal(body, &receivedPayload)
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
@@ -120,7 +120,7 @@ func TestNotifier_NotifyAlert(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
-		json.Unmarshal(body, &receivedPayload)
+		_ = json.Unmarshal(body, &receivedPayload)
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()

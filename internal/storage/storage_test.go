@@ -223,7 +223,7 @@ func TestLocalStorage_Read(t *testing.T) {
 	// Create test file
 	testContent := "test file content"
 	testPath := "testfile.txt"
-	os.WriteFile(filepath.Join(tmpDir, testPath), []byte(testContent), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, testPath), []byte(testContent), 0644)
 
 	tests := []struct {
 		name        string
@@ -287,7 +287,7 @@ func TestLocalStorage_Delete(t *testing.T) {
 
 	// Create test file
 	testPath := "todelete.txt"
-	os.WriteFile(filepath.Join(tmpDir, testPath), []byte("delete me"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, testPath), []byte("delete me"), 0644)
 
 	tests := []struct {
 		name    string
@@ -338,7 +338,7 @@ func TestLocalStorage_Exists(t *testing.T) {
 
 	// Create test file
 	testPath := "exists.txt"
-	os.WriteFile(filepath.Join(tmpDir, testPath), []byte("exists"), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, testPath), []byte("exists"), 0644)
 
 	tests := []struct {
 		name       string
@@ -391,7 +391,7 @@ func TestLocalStorage_Size(t *testing.T) {
 	// Create test file with known size
 	testPath := "sized.txt"
 	testContent := "12345678901234567890" // 20 bytes
-	os.WriteFile(filepath.Join(tmpDir, testPath), []byte(testContent), 0644)
+	_ = os.WriteFile(filepath.Join(tmpDir, testPath), []byte(testContent), 0644)
 
 	tests := []struct {
 		name       string
@@ -459,8 +459,8 @@ func TestLocalStorage_List(t *testing.T) {
 
 	for path, content := range files {
 		fullPath := filepath.Join(tmpDir, path)
-		os.MkdirAll(filepath.Dir(fullPath), 0755)
-		os.WriteFile(fullPath, []byte(content), 0644)
+		_ = os.MkdirAll(filepath.Dir(fullPath), 0755)
+		_ = os.WriteFile(fullPath, []byte(content), 0644)
 		// Add small delay to ensure different modification times
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -675,7 +675,7 @@ func TestNewS3Storage(t *testing.T) {
 			}
 
 			if storage == nil {
-				t.Error("NewS3Storage() returned nil")
+				t.Fatal("NewS3Storage() returned nil")
 			}
 
 			if storage.bucket != tt.cfg.Bucket {

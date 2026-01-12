@@ -225,8 +225,8 @@ func TestCalculateChecksum_DifferentContent(t *testing.T) {
 	file1 := filepath.Join(tmpDir, "file1.txt")
 	file2 := filepath.Join(tmpDir, "file2.txt")
 
-	os.WriteFile(file1, []byte("content 1"), 0644)
-	os.WriteFile(file2, []byte("content 2"), 0644)
+	_ = os.WriteFile(file1, []byte("content 1"), 0644)
+	_ = os.WriteFile(file2, []byte("content 2"), 0644)
 
 	checksum1, _ := CalculateChecksum(file1)
 	checksum2, _ := CalculateChecksum(file2)
