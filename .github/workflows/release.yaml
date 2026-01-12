@@ -76,7 +76,7 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=7 go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.VERSION }}" -trimpath -o dist/datasaver-linux-armv7 ./cmd/datasaver
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*
           generate_release_notes: true
