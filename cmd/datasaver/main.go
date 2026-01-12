@@ -14,6 +14,7 @@ import (
 	"github.com/almatuck/datasaver/internal/backup"
 	"github.com/almatuck/datasaver/internal/config"
 	"github.com/almatuck/datasaver/internal/mcp"
+	"github.com/almatuck/datasaver/internal/mcp/oauth"
 	"github.com/almatuck/datasaver/internal/metrics"
 	"github.com/almatuck/datasaver/internal/notify"
 	"github.com/almatuck/datasaver/internal/restore"
@@ -110,8 +111,18 @@ func daemonCmd() *cobra.Command {
 			mux.Handle("/metrics", metrics.Handler())
 			mux.HandleFunc("/health", healthHandler(scheduler))
 
+			// Build base URL for OAuth discovery
+			baseURL := fmt.Sprintf("http://localhost:%d", cfg.Monitoring.HealthPort)
+			if envURL := os.Getenv("DATASAVER_BASE_URL"); envURL != "" {
+				baseURL = envURL
+			}
+
+			// Register OAuth discovery endpoints
+			oauthHandler := oauth.NewHandler(baseURL)
+			oauthHandler.RegisterRoutes(mux)
+
 			// Add MCP endpoint if API key is configured
-			mcpHandler := mcp.NewHandler(cfg, store, notifier, logger)
+			mcpHandler := mcp.NewHandler(cfg, store, notifier, logger, baseURL)
 			if mcpHandler.Enabled() {
 				mux.Handle("/mcp", mcpHandler)
 				logger.Info("MCP endpoint enabled", "path", "/mcp")

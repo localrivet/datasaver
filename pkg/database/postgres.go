@@ -139,6 +139,10 @@ func (p *PostgresDriver) Restore(ctx context.Context, r io.Reader, targetDB stri
 		"-p", fmt.Sprintf("%d", p.cfg.Port),
 		"-U", p.cfg.User,
 		"-d", dbName,
+		"--clean",          // Drop existing objects before restoring
+		"--if-exists",      // Don't error if objects don't exist
+		"--no-owner",       // Don't restore ownership
+		"--no-privileges",  // Don't restore privileges
 		tmpFile.Name(),
 	}
 

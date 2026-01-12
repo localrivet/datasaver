@@ -17,6 +17,12 @@ type Config struct {
 	Retention   RetentionConfig   `yaml:"retention"`
 	Compression string            `yaml:"compression"`
 	Monitoring  MonitoringConfig  `yaml:"monitoring"`
+	Backup      BackupConfig      `yaml:"backup"`
+}
+
+type BackupConfig struct {
+	VerifyAfterBackup bool `yaml:"verify_after_backup"` // Restore to temp DB to verify backup integrity
+	VerifyChecksum    bool `yaml:"verify_checksum"`     // Verify checksum on restore
 }
 
 type DatabaseConfig struct {
@@ -223,6 +229,13 @@ func (c *Config) loadFromEnv() {
 		if n, err := strconv.Atoi(v); err == nil {
 			c.Monitoring.AlertAfterHours = n
 		}
+	}
+
+	if v := os.Getenv("DATASAVER_VERIFY_BACKUP"); v != "" {
+		c.Backup.VerifyAfterBackup = strings.ToLower(v) == "true"
+	}
+	if v := os.Getenv("DATASAVER_VERIFY_CHECKSUM"); v != "" {
+		c.Backup.VerifyChecksum = strings.ToLower(v) == "true"
 	}
 }
 

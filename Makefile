@@ -110,6 +110,41 @@ run-dev: build
 test:
 	$(GOTEST) ./...
 
+.PHONY: test-integration
+test-integration:
+	$(GOTEST) -tags=integration ./...
+
+.PHONY: test-integration-sqlite
+test-integration-sqlite:
+	$(GOTEST) -tags=integration -run SQLite ./...
+
+.PHONY: test-integration-postgres
+test-integration-postgres:
+	$(GOTEST) -tags=integration -run Postgres ./...
+
+.PHONY: test-integration-verbose
+test-integration-verbose:
+	$(GOTEST) -tags=integration -v ./...
+
+.PHONY: test-all
+test-all: test test-integration
+
+.PHONY: docker-test-up
+docker-test-up:
+	docker compose -f compose.test.yaml up -d
+	@echo "Waiting for PostgreSQL to be ready..."
+	@sleep 5
+
+.PHONY: docker-test-down
+docker-test-down:
+	docker compose -f compose.test.yaml down -v
+
+.PHONY: test-coverage
+test-coverage:
+	$(GOTEST) -tags=integration -coverprofile=coverage.out ./...
+	$(GOCMD) tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report: coverage.html"
+
 .PHONY: fmt
 fmt:
 	$(GOCMD) fmt ./...

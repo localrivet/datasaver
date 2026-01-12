@@ -57,6 +57,8 @@ type BackupResult struct {
 	CompressedSize  int64
 	Duration        time.Duration
 	Checksum        string
+	Verified        bool   // True if backup was verified after creation
+	VerifyError     error  // Non-nil if verification failed
 	Error           error
 }
 
@@ -216,6 +218,23 @@ func (e *Engine) Run(ctx context.Context) (*BackupResult, error) {
 		metadata.AddFile(metaPath)
 	}
 
+	// Verify backup if configured
+	if e.cfg.Backup.VerifyAfterBackup {
+		e.logger.Info("verifying backup integrity", "id", backupID)
+		validator := NewValidatorWithDBType(e.storage, e.logger, e.cfg.Database.Type)
+		if err := validator.VerifyRestoreIntegrity(ctx, metadata); err != nil {
+			result.VerifyError = err
+			e.logger.Error("backup verification FAILED", "id", backupID, "error", err)
+			// This is critical - the backup may be corrupted
+			if e.notifier != nil {
+				e.notifier.NotifyFailure(backupID, fmt.Errorf("backup verification failed: %w", err))
+			}
+		} else {
+			result.Verified = true
+			e.logger.Info("backup verified successfully", "id", backupID)
+		}
+	}
+
 	e.lastRun = startTime
 	e.lastError = nil
 
@@ -225,6 +244,7 @@ func (e *Engine) Run(ctx context.Context) (*BackupResult, error) {
 		"compressed_size", result.CompressedSize,
 		"duration", result.Duration,
 		"type", metadata.Type,
+		"verified", result.Verified,
 	)
 
 	if e.notifier != nil {

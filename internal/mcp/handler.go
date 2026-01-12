@@ -1,46 +1,50 @@
 package mcp
 
 import (
-	"crypto/subtle"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/almatuck/datasaver/internal/config"
+	"github.com/almatuck/datasaver/internal/mcp/mcpauth"
 	"github.com/almatuck/datasaver/internal/notify"
 	"github.com/almatuck/datasaver/internal/storage"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// Handler handles MCP HTTP requests with simple API key authentication.
+// Handler handles MCP HTTP requests with Bearer token authentication.
+// Supports API keys via DATASAVER_MCP_API_KEY environment variable.
 type Handler struct {
-	cfg         *config.Config
-	storage     storage.Backend
-	notifier    *notify.Notifier
-	logger      *slog.Logger
-	apiKey      string
-	httpHandler http.Handler
+	cfg             *config.Config
+	storage         storage.Backend
+	notifier        *notify.Notifier
+	logger          *slog.Logger
+	authenticator   *mcpauth.Authenticator
+	httpHandler     http.Handler
+	resourceMetaURL string
 }
 
-// NewHandler creates a new MCP handler with API key authentication.
-// API key is read from DATASAVER_MCP_API_KEY environment variable.
-func NewHandler(cfg *config.Config, store storage.Backend, notifier *notify.Notifier, logger *slog.Logger) *Handler {
-	apiKey := os.Getenv("DATASAVER_MCP_API_KEY")
-	if apiKey == "" {
+// NewHandler creates a new MCP handler with authentication.
+// baseURL is used to construct the resource metadata URL for OAuth discovery.
+func NewHandler(cfg *config.Config, store storage.Backend, notifier *notify.Notifier, logger *slog.Logger, baseURL string) *Handler {
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	h := &Handler{
+		cfg:             cfg,
+		storage:         store,
+		notifier:        notifier,
+		logger:          logger,
+		authenticator:   mcpauth.NewAuthenticator(),
+		resourceMetaURL: baseURL + "/.well-known/oauth-protected-resource",
+	}
+
+	if !h.authenticator.Enabled() {
 		logger.Warn("DATASAVER_MCP_API_KEY not set - MCP endpoint will reject all requests")
 	}
 
-	h := &Handler{
-		cfg:      cfg,
-		storage:  store,
-		notifier: notifier,
-		logger:   logger,
-		apiKey:   apiKey,
-	}
-
-	// Create the streamable HTTP handler
+	// Create the streamable HTTP handler in stateless mode.
 	streamHandler := mcp.NewStreamableHTTPHandler(
 		h.getServerForRequest,
 		&mcp.StreamableHTTPOptions{
@@ -54,15 +58,21 @@ func NewHandler(cfg *config.Config, store storage.Backend, notifier *notify.Noti
 	return h
 }
 
-// authMiddleware validates API key from Authorization header.
+// authMiddleware validates Bearer tokens and returns proper OAuth challenge on 401.
+// Uses WWW-Authenticate header with resource_metadata for RFC 9728 compliance.
 func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Log request for debugging
+		// Log session info for debugging
 		sessionID := r.Header.Get("Mcp-Session-Id")
-		h.logger.Debug("MCP request", "method", r.Method, "path", r.URL.Path, "session", sessionID)
+		h.logger.Debug("MCP request",
+			"method", r.Method,
+			"path", r.URL.Path,
+			"session", sessionID,
+			"accept", r.Header.Get("Accept"),
+		)
 
 		// Check if API key is configured
-		if h.apiKey == "" {
+		if !h.authenticator.Enabled() {
 			http.Error(w, "MCP endpoint not configured", http.StatusServiceUnavailable)
 			return
 		}
@@ -80,19 +90,24 @@ func (h *Handler) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Constant-time comparison to prevent timing attacks
-		if subtle.ConstantTimeCompare([]byte(token), []byte(h.apiKey)) != 1 {
+		// Verify token
+		tokenInfo, err := h.authenticator.TokenVerifier()(r.Context(), token, r)
+		if err != nil {
 			h.writeUnauthorized(w, "invalid token")
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		// Add token info to request context and continue
+		ctx := mcpauth.ContextWithTokenInfo(r.Context(), tokenInfo)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// writeUnauthorized sends a 401 response.
-func (h *Handler) writeUnauthorized(w http.ResponseWriter, msg string) {
-	w.Header().Set("WWW-Authenticate", `Bearer realm="datasaver"`)
+// writeUnauthorized sends a 401 response with WWW-Authenticate header for OAuth discovery.
+// Uses RFC 9728 compliant format with quoted resource_metadata value.
+func (h *Handler) writeUnauthorized(w http.ResponseWriter, _ string) {
+	wwwAuth := fmt.Sprintf(`Bearer resource_metadata="%s", scope="mcp:full"`, h.resourceMetaURL)
+	w.Header().Set("WWW-Authenticate", wwwAuth)
 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }
 
@@ -108,5 +123,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Enabled returns true if MCP is configured (API key is set).
 func (h *Handler) Enabled() bool {
-	return h.apiKey != ""
+	return h.authenticator.Enabled()
+}
+
+// Authenticator returns the authenticator for external use.
+func (h *Handler) Authenticator() *mcpauth.Authenticator {
+	return h.authenticator
 }

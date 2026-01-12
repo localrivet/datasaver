@@ -23,3 +23,14 @@ node_modules/
 
 # OS specific
 .DS_Store
+
+# Build artifacts
+/release/
+/datasaver
+coverage.out
+coverage.html
+
+# Claude Code local files
+.claude/ralph-loop.local.md
+CLAUDE.md
+prd.md
