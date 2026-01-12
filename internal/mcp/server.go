@@ -4,12 +4,12 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/almatuck/datasaver/internal/backup"
-	"github.com/almatuck/datasaver/internal/config"
-	"github.com/almatuck/datasaver/internal/mcp/tools"
-	"github.com/almatuck/datasaver/internal/notify"
-	"github.com/almatuck/datasaver/internal/restore"
-	"github.com/almatuck/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/internal/backup"
+	"github.com/localrivet/datasaver/internal/config"
+	"github.com/localrivet/datasaver/internal/mcp/tools"
+	"github.com/localrivet/datasaver/internal/notify"
+	"github.com/localrivet/datasaver/internal/restore"
+	"github.com/localrivet/datasaver/internal/storage"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )

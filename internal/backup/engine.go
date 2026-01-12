@@ -13,12 +13,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/almatuck/datasaver/internal/config"
-	"github.com/almatuck/datasaver/internal/notify"
-	"github.com/almatuck/datasaver/internal/rotation"
-	"github.com/almatuck/datasaver/internal/storage"
-	"github.com/almatuck/datasaver/pkg/database"
-	"github.com/almatuck/datasaver/pkg/postgres"
+	"github.com/localrivet/datasaver/internal/config"
+	"github.com/localrivet/datasaver/internal/notify"
+	"github.com/localrivet/datasaver/internal/rotation"
+	"github.com/localrivet/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/pkg/database"
+	"github.com/localrivet/datasaver/pkg/postgres"
 )
 
 type Engine struct {

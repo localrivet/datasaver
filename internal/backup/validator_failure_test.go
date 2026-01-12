@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/almatuck/datasaver/internal/storage"
-	"github.com/almatuck/datasaver/pkg/postgres"
+	"github.com/localrivet/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/pkg/postgres"
 )
 
 // TestValidator_EmptyBackup tests handling of empty backup files

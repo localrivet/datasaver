@@ -12,8 +12,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/almatuck/datasaver/internal/storage"
-	"github.com/almatuck/datasaver/pkg/postgres"
+	"github.com/localrivet/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/pkg/postgres"
 	_ "modernc.org/sqlite"
 )
 

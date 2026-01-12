@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/almatuck/datasaver/pkg/postgres"
+	"github.com/localrivet/datasaver/pkg/postgres"
 )
 
 func TestNewPolicy(t *testing.T) {

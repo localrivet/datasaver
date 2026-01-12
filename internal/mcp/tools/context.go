@@ -3,10 +3,10 @@ package tools
 import (
 	"log/slog"
 
-	"github.com/almatuck/datasaver/internal/backup"
-	"github.com/almatuck/datasaver/internal/config"
-	"github.com/almatuck/datasaver/internal/restore"
-	"github.com/almatuck/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/internal/backup"
+	"github.com/localrivet/datasaver/internal/config"
+	"github.com/localrivet/datasaver/internal/restore"
+	"github.com/localrivet/datasaver/internal/storage"
 )
 
 // ToolContext carries context for all MCP tools.

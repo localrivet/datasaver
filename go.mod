@@ -1,4 +1,4 @@
-module github.com/almatuck/datasaver
+module github.com/localrivet/datasaver
 
 go 1.25.4
 

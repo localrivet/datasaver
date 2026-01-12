@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/almatuck/datasaver/pkg/postgres"
+	"github.com/localrivet/datasaver/pkg/postgres"
 )
 
 type GFSRotator struct {

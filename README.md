@@ -21,7 +21,7 @@ Add to your `compose.yml`:
 
 ```yaml
 datasaver:
-  image: ghcr.io/almatuck/datasaver:latest
+  image: ghcr.io/localrivet/datasaver:latest
   environment:
     DATASAVER_DB_HOST: postgres
     DATASAVER_DB_NAME: mydb

@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/almatuck/datasaver/internal/config"
-	"github.com/almatuck/datasaver/internal/storage"
+	"github.com/localrivet/datasaver/internal/config"
+	"github.com/localrivet/datasaver/internal/storage"
 	_ "modernc.org/sqlite"
 )
 
