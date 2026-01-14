@@ -232,9 +232,7 @@ release: update-changelog
 	  git push || echo "   Failed to push commits, continuing..."; \
 	  echo "-> Waiting for GitHub to register the tag..."; \
 	  sleep 3; \
-	  echo "📦 Building and pushing Docker images..."; \
-	  echo "-> Building multi-platform Docker images and pushing to Docker Hub..."; \
-	  $(MAKE) docker-buildx VERSION="$$VERSION" || echo "   Docker build/push failed, continuing..."; \
+	  echo "📦 Docker images will be built by GitHub Actions..."; \
 	  echo "📦 Building platform binaries..."; \
 	  $(MAKE) build-all VERSION="$$VERSION"; \
 	  echo "📦 Creating GitHub release..."; \
