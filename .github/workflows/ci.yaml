@@ -98,7 +98,7 @@ jobs:
           go build -ldflags="-s -w" -trimpath -o datasaver-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/datasaver
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: datasaver-${{ matrix.goos }}-${{ matrix.goarch }}
           path: datasaver-${{ matrix.goos }}-${{ matrix.goarch }}
