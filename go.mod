@@ -3,7 +3,7 @@ module github.com/localrivet/datasaver
 go 1.24.0
 
 require (
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.11.2
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/modelcontextprotocol/go-sdk v1.2.0
 	github.com/prometheus/client_golang v1.22.0
