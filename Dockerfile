@@ -15,6 +15,7 @@ FROM alpine:3.21
 
 RUN apk add --no-cache \
     postgresql16-client \
+    sqlite \
     ca-certificates \
     tzdata
 
