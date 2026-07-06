@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o datasaver ./cmd/datasa
 FROM alpine:3.21
 
 RUN apk add --no-cache \
-    postgresql16-client \
+    postgresql17-client \
     sqlite \
     ca-certificates \
     tzdata
