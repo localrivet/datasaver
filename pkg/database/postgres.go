@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -28,11 +29,30 @@ func (p *PostgresDriver) Type() string {
 }
 
 func (p *PostgresDriver) ConnectionString() string {
+	return p.connString("")
+}
+
+// connString returns the libpq connection string, optionally overriding the
+// database name. pg_dump/pg_restore receive this via -d: in URL-only setups
+// the discrete Host/Port/User/Name fields are empty, so building CLI args
+// from them silently targets nothing.
+func (p *PostgresDriver) connString(dbName string) string {
 	if p.cfg.URL != "" {
-		return p.cfg.URL
+		if dbName == "" {
+			return p.cfg.URL
+		}
+		u, err := url.Parse(p.cfg.URL)
+		if err != nil {
+			return p.cfg.URL
+		}
+		u.Path = "/" + dbName
+		return u.String()
+	}
+	if dbName == "" {
+		dbName = p.cfg.Name
 	}
 	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		p.cfg.User, p.cfg.Password, p.cfg.Host, p.cfg.Port, p.cfg.Name)
+		p.cfg.User, url.QueryEscape(p.cfg.Password), p.cfg.Host, p.cfg.Port, dbName)
 }
 
 func (p *PostgresDriver) Connect(ctx context.Context) error {
@@ -77,19 +97,17 @@ func (p *PostgresDriver) Version(ctx context.Context) (string, error) {
 
 func (p *PostgresDriver) Dump(ctx context.Context, w io.Writer) error {
 	args := []string{
-		"-h", p.cfg.Host,
-		"-p", fmt.Sprintf("%d", p.cfg.Port),
-		"-U", p.cfg.User,
-		"-d", p.cfg.Name,
+		"-d", p.connString(""),
 		"-F", "c",
 	}
 
 	cmd := exec.CommandContext(ctx, "pg_dump", args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", p.cfg.Password))
 	cmd.Stdout = w
+	var stderr strings.Builder
+	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("pg_dump failed: %w", err)
+		return fmt.Errorf("pg_dump failed: %w, output: %s", err, stderr.String())
 	}
 
 	return nil
@@ -97,16 +115,12 @@ func (p *PostgresDriver) Dump(ctx context.Context, w io.Writer) error {
 
 func (p *PostgresDriver) DumpToFile(ctx context.Context, outputPath string) error {
 	args := []string{
-		"-h", p.cfg.Host,
-		"-p", fmt.Sprintf("%d", p.cfg.Port),
-		"-U", p.cfg.User,
-		"-d", p.cfg.Name,
+		"-d", p.connString(""),
 		"-F", "c",
 		"-f", outputPath,
 	}
 
 	cmd := exec.CommandContext(ctx, "pg_dump", args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", p.cfg.Password))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -135,10 +149,7 @@ func (p *PostgresDriver) Restore(ctx context.Context, r io.Reader, targetDB stri
 	tmpFile.Close()
 
 	args := []string{
-		"-h", p.cfg.Host,
-		"-p", fmt.Sprintf("%d", p.cfg.Port),
-		"-U", p.cfg.User,
-		"-d", dbName,
+		"-d", p.connString(dbName),
 		"--clean",          // Drop existing objects before restoring
 		"--if-exists",      // Don't error if objects don't exist
 		"--no-owner",       // Don't restore ownership
@@ -147,7 +158,6 @@ func (p *PostgresDriver) Restore(ctx context.Context, r io.Reader, targetDB stri
 	}
 
 	cmd := exec.CommandContext(ctx, "pg_restore", args...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", p.cfg.Password))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
