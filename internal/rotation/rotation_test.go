@@ -229,7 +229,11 @@ func TestGFSRotator_DetermineBackupsToDelete_KeepRecent(t *testing.T) {
 	policy := NewPolicy(3, 2, 1, 0) // Keep 3 daily, 2 weekly, 1 monthly
 	rotator := NewGFSRotator(policy)
 
-	now := time.Now()
+	// Fixed anchor on a Saturday: the five prior days are Mon-Fri and never
+	// the 1st, so every backup classifies as daily-only regardless of when
+	// the test runs (time.Now() made this fail whenever the window crossed a
+	// Sunday or a month boundary).
+	now := time.Date(2026, 3, 14, 12, 0, 0, 0, time.UTC)
 	backups := []*postgres.BackupMetadata{
 		{ID: "backup-1", Timestamp: now.AddDate(0, 0, -1)},
 		{ID: "backup-2", Timestamp: now.AddDate(0, 0, -2)},
